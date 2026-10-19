@@ -1,0 +1,40 @@
+services:
+  mongodb:
+    image: mongo:4.4
+    container_name: movies-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - movies-network
+
+  server:
+    build: ./server
+    container_name: movies-server
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/cinema
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    networks:
+      - movies-network
+
+  client:
+    build: ./client
+    container_name: movies-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - movies-network
+
+networks:
+  movies-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
